@@ -4,6 +4,7 @@ import {
   FieldNode,
   FragmentDefinitionNode,
   InlineFragmentNode,
+  OperationDefinitionNode,
 } from 'graphql';
 
 import {
@@ -46,12 +47,14 @@ export type ExecContext = {
   resultMapper: ResultMapper;
   resolver: Resolver;
   fragmentMatcher: FragmentMatcher;
+  operation: string;
 };
 
 export type ExecInfo = {
   isLeaf: boolean;
   resultKey: string;
   directives: DirectiveInfo;
+  operationType: string;
 };
 
 export type ExecOptions = {
@@ -77,6 +80,7 @@ export function graphql(
   execOptions: ExecOptions = {},
 ) {
   const mainDefinition = getMainDefinition(document);
+  const operation = (mainDefinition as OperationDefinitionNode).operation;
 
   const fragments = getFragmentDefinitions(document);
   const fragmentMap = createFragmentMap(fragments);
@@ -93,6 +97,7 @@ export function graphql(
     resultMapper,
     resolver,
     fragmentMatcher,
+    operation,
   };
 
   return executeSelectionSet(
@@ -107,6 +112,7 @@ function executeSelectionSet(
   selectionSet: SelectionSetNode,
   rootValue: any,
   execContext: ExecContext,
+  operation?: string,
 ) {
   const {
     fragmentMap,
@@ -182,6 +188,7 @@ function executeField(
     variableValues: variables,
     contextValue,
     resolver,
+    operation,
   } = execContext;
 
   const fieldName = field.name.value;
@@ -191,6 +198,7 @@ function executeField(
     isLeaf: !field.selectionSet,
     resultKey: resultKeyNameFromField(field),
     directives: getDirectiveInfoFromField(field, variables),
+    operationType: operation,
   };
 
   const result = resolver(fieldName, rootValue, args, contextValue, info);

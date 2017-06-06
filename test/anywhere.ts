@@ -628,11 +628,13 @@ describe('graphql anywhere', () => {
         directives: null,
         isLeaf: false,
         resultKey: 'alias',
+        operationType: 'query',
       },
       b: {
         directives: null,
         isLeaf: true,
         resultKey: 'b',
+        operationType: 'query',
       },
       hasDirective: {
         directives: {
@@ -641,6 +643,7 @@ describe('graphql anywhere', () => {
         },
         isLeaf: true,
         resultKey: 'hasDirective',
+        operationType: 'query',
       },
     });
   });
@@ -808,5 +811,39 @@ describe('graphql anywhere', () => {
         height: 1.89,
       },
     });
+  });
+
+  it('can provide root operationType for mutation', () => {
+    const resolver = (fieldName, root, args, context, info) => info;
+
+    const query = gql`
+      mutation {
+        user
+      }
+    `;
+
+    const result = graphql(
+      resolver,
+      query,
+    );
+
+    assert.equal(result.user.operationType, 'mutation');
+  });
+
+  it('can provide root operationType for subscription', () => {
+    const resolver = (fieldName, root, args, context, info) => info;
+
+    const query = gql`
+      subscription {
+        user
+      }
+    `;
+
+    const result = graphql(
+      resolver,
+      query,
+    );
+
+    assert.equal(result.user.operationType, 'subscription');
   });
 });
